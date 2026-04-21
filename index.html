@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Групи в Zoom — KEVIN</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Montserrat',sans-serif;overflow:hidden;}
+#stage{width:1280px;height:720px;position:relative;overflow:hidden;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6);}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;transform:translateX(60px);}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.out{opacity:0;transform:translateX(-60px);}
+
+/* nav */
+#nav{display:flex;align-items:center;gap:16px;margin-top:14px;}
+#nav button{background:rgba(255,255,255,.12);border:none;color:#fff;padding:8px 22px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}
+#nav button:hover{background:rgba(255,255,255,.22);}
+#dots{display:flex;gap:8px;}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:background .2s,transform .2s;}
+.dot.active{background:#4A90D9;transform:scale(1.3);}
+#progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#4A90D9,#7BC8FF);transition:width .4s ease;border-radius:0 2px 2px 0;}
+
+/* slide headers */
+.slide-header{padding:32px 56px 0;display:flex;align-items:flex-start;gap:18px;}
+.slide-num{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.4;margin-bottom:4px;}
+.slide-title{font-size:30px;font-weight:900;}
+.slide-subtitle{font-size:13px;opacity:.55;margin-top:3px;}
+.slide-body{flex:1;padding:18px 56px 36px;}
+
+/* logo */
+.logo-wrap{background:white;border-radius:16px;padding:8px 10px 10px;box-shadow:0 2px 12px rgba(0,0,0,.08);text-align:center;}
+
+/* ── SLIDE 1 — COVER ── */
+.s1-bg{background:#0d1b2e;background-image:radial-gradient(circle,rgba(74,144,217,.07) 1px,transparent 1px);background-size:28px 28px;}
+.s1-inner{display:flex;height:100%;padding:44px 56px;gap:36px;align-items:center;}
+.s1-left{display:flex;flex-direction:column;gap:18px;flex:1;}
+.s1-tag{display:inline-block;background:#4A90D9;color:#fff;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:5px 14px;border-radius:20px;width:fit-content;}
+.s1-title{font-size:54px;font-weight:900;color:#fff;line-height:1.08;}
+.s1-title span{color:#4A90D9;}
+.s1-sub{font-size:15px;color:rgba(255,255,255,.6);line-height:1.65;max-width:520px;}
+.s1-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;}
+.s1-pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:#fff;font-size:13px;font-weight:600;padding:7px 16px;border-radius:20px;}
+.s1-pill span{color:#4A90D9;}
+.s1-right{display:flex;flex-direction:column;gap:14px;align-items:center;}
+
+/* ── SLIDE 2 — ЩО ЦЕ ── */
+.s2-bg{background:linear-gradient(160deg,#0a1020,#0d1b2e);}
+.s2-cards{display:flex;gap:20px;height:100%;}
+.s2-card{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:28px 24px;display:flex;flex-direction:column;gap:14px;}
+.s2-icon{font-size:36px;}
+.s2-card-title{font-size:16px;font-weight:800;color:#4A90D9;}
+.s2-items{display:flex;flex-direction:column;gap:8px;}
+.s2-item{font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.45;display:flex;gap:8px;}
+.s2-item::before{content:"→";color:#FFD300;flex-shrink:0;font-weight:700;}
+
+/* ── SLIDE 3 — ФОРМАТИ ── */
+.s3-bg{background:linear-gradient(160deg,#071020,#0d1b30);}
+.switcher-tabs{display:flex;gap:0;background:rgba(255,255,255,.07);border-radius:12px;padding:4px;width:fit-content;margin-bottom:22px;}
+.sw-tab{padding:10px 32px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;color:rgba(255,255,255,.45);transition:all .25s;}
+.sw-tab.active{background:#4A90D9;color:#fff;}
+.sw-panel{display:none;}
+.sw-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.sw-row{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:18px 20px;}
+.sw-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4A90D9;margin-bottom:5px;}
+.sw-val{font-size:14.5px;font-weight:600;color:#fff;}
+.sw-val small{font-size:12.5px;color:rgba(255,255,255,.5);font-weight:400;}
+.sw-hl{border-color:#4A90D9 !important;}
+
+/* ── SLIDE 4 — HOTSPOT ZOOM ── */
+.s4-bg{background:linear-gradient(160deg,#060e1a,#0d1b2e);}
+.s4-body{display:flex;gap:24px;align-items:stretch;}
+.zoom-wrapper{flex:0 0 700px;}
+.zoom-screen{background:#1c1c1e;border-radius:12px;overflow:hidden;position:relative;height:100%;border:1.5px solid rgba(255,255,255,.1);}
+.zoom-topbar{background:#2c2c2e;padding:9px 16px;display:flex;justify-content:space-between;align-items:center;}
+.zoom-meeting-name{font-size:12px;color:rgba(255,255,255,.75);font-weight:600;}
+.zoom-badges{display:flex;gap:12px;align-items:center;}
+.zoom-rec{font-size:11px;font-weight:700;color:#ff4040;animation:recBlink 1.5s ease-in-out infinite;}
+@keyframes recBlink{0%,100%{opacity:1;}50%{opacity:.4;}}
+.zoom-timer{font-size:11px;color:rgba(255,255,255,.5);}
+.zoom-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:#000;height:calc(100% - 88px);}
+.zoom-tile{background:#2a2a2e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;}
+.zoom-tile.main{background:#1e2a3a;}
+.zoom-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;}
+.zoom-avatar.teacher{background:#4A90D9;width:64px;height:64px;font-size:24px;}
+.zoom-avatar.s1{background:#EB7C22;}
+.zoom-avatar.s2{background:#3DB4BF;}
+.zoom-avatar.s3{background:#9B59B6;}
+.zoom-tile-name{font-size:11px;color:rgba(255,255,255,.6);font-weight:600;}
+.zoom-tile-name.t{color:#7BC8FF;}
+.zoom-mic{position:absolute;bottom:8px;left:8px;font-size:12px;opacity:.7;}
+.zoom-toolbar{background:#2c2c2e;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;padding:0 16px;}
+.zt-btn{background:rgba(255,255,255,.08);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:rgba(255,255,255,.7);}
+.zt-btn.end{background:#c0392b;color:#fff;padding:6px 14px;font-size:11px;font-weight:700;margin-left:auto;}
+
+/* hotspots */
+.hotspot{position:absolute;width:36px;height:36px;cursor:pointer;transform:translate(-50%,-50%);z-index:10;}
+.hp-ring{position:absolute;inset:-6px;border-radius:50%;border:2px solid #4A90D9;animation:hpPulse 1.8s ease-in-out infinite;opacity:.7;}
+@keyframes hpPulse{0%,100%{transform:scale(1);opacity:.7;}50%{transform:scale(1.4);opacity:0;}}
+.hp-dot{width:36px;height:36px;border-radius:50%;background:#4A90D9;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px rgba(74,144,217,.6);transition:transform .2s,background .2s;}
+.hotspot:hover .hp-dot{transform:scale(1.15);}
+.hotspot.active .hp-dot{background:#FFD300;box-shadow:0 0 16px rgba(255,211,0,.7);}
+.hotspot.active .hp-ring{border-color:#FFD300;}
+
+/* detail panel */
+.zoom-detail-panel{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;}
+.detail-empty-icon{font-size:52px;margin-bottom:14px;opacity:.4;}
+.detail-empty-text{font-size:14px;color:rgba(255,255,255,.35);font-weight:600;}
+.detail-content{display:none;flex-direction:column;align-items:center;gap:12px;width:100%;}
+.det-icon{font-size:52px;}
+.det-title{font-size:20px;font-weight:900;color:#FFD300;}
+.det-text{font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.65;text-align:center;}
+.hot-counter{margin-top:16px;font-size:12px;color:rgba(255,255,255,.35);font-weight:700;}
+.hot-bar-wrap{width:100%;background:rgba(255,255,255,.08);border-radius:6px;height:5px;margin-top:8px;overflow:hidden;}
+.hot-bar{height:100%;background:linear-gradient(90deg,#4A90D9,#FFD300);border-radius:6px;transition:width .4s ease;}
+
+/* ── SLIDE 5 — КАЛЕНДАР ── */
+.s5-bg{background:linear-gradient(160deg,#060e1a,#101828);}
+.calendar-wrap{display:flex;gap:32px;height:100%;align-items:center;}
+.calendar{flex:0 0 440px;}
+.cal-month{font-size:18px;font-weight:800;color:#4A90D9;margin-bottom:16px;text-align:center;letter-spacing:1px;text-transform:uppercase;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.cal-head{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-align:center;padding:4px 0;letter-spacing:.5px;}
+.cal-day{font-size:14px;font-weight:600;color:rgba(255,255,255,.4);text-align:center;padding:8px 4px;border-radius:8px;cursor:default;}
+.cal-day.lesson{background:linear-gradient(135deg,#4A90D9,#7BC8FF);color:#fff;font-weight:800;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 2px 8px rgba(74,144,217,.4);}
+.cal-day.lesson:hover{transform:scale(1.12);box-shadow:0 4px 14px rgba(74,144,217,.6);}
+.cal-day.lesson.done{background:linear-gradient(135deg,#FFD300,#EB7C22);}
+.cal-day.empty{opacity:0;}
+.cal-legend{display:flex;gap:16px;margin-top:14px;justify-content:center;}
+.cal-leg-item{display:flex;align-items:center;gap:7px;font-size:12px;color:rgba(255,255,255,.55);}
+.cal-leg-dot{width:12px;height:12px;border-radius:3px;}
+.cal-info{flex:1;display:flex;flex-direction:column;gap:16px;}
+.cal-stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:22px 24px;display:flex;align-items:center;gap:18px;}
+.cal-stat-num{font-size:42px;font-weight:900;color:#4A90D9;line-height:1;}
+.cal-stat-label{font-size:14px;font-weight:700;color:#fff;}
+.cal-stat-sub{font-size:12.5px;color:rgba(255,255,255,.5);margin-top:3px;}
+
+/* ── SLIDE 6 — ДОДАТКОВІ ОПЦІЇ ── */
+.s6-bg{background:linear-gradient(160deg,#060e1a,#101820);}
+.options-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;height:100%;}
+.opt-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;gap:12px;}
+.opt-icon{font-size:36px;}
+.opt-title{font-size:16px;font-weight:800;color:#4A90D9;}
+.opt-desc{font-size:13.5px;color:rgba(255,255,255,.75);line-height:1.55;}
+.opt-tag{font-size:11px;font-weight:700;background:rgba(74,144,217,.15);color:#7BC8FF;border:1px solid rgba(74,144,217,.3);padding:3px 10px;border-radius:10px;width:fit-content;}
+
+/* ── SLIDE 7 — CHECKLIST ── */
+.s7-bg{background:linear-gradient(160deg,#060e1a,#101828);}
+.s7-inner{display:grid;grid-template-columns:1fr 1fr;gap:28px;height:100%;}
+.checklist{display:flex;flex-direction:column;gap:11px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:11px;padding:13px 15px;cursor:pointer;border:1.5px solid transparent;transition:border-color .2s,background .2s;}
+.check-item.checked{border-color:#4A90D9;background:rgba(74,144,217,.07);}
+.check-box{width:22px;height:22px;border:2px solid rgba(255,255,255,.25);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;margin-top:1px;}
+.check-item.checked .check-box{background:#4A90D9;border-color:#4A90D9;color:#fff;}
+.check-text{font-size:13.5px;color:rgba(255,255,255,.8);line-height:1.4;}
+.resources{display:flex;flex-direction:column;gap:11px;}
+.res-title{font-size:15px;font-weight:800;color:#4A90D9;margin-bottom:4px;}
+.res-link{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:10px;}
+.res-link span{color:#7BC8FF;font-weight:700;}
+#confetti-container{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.confetti-piece{position:absolute;border-radius:2px;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0);opacity:1;}100%{transform:translateY(740px) rotate(720deg);opacity:0;}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ══ SLIDE 1 — COVER ══ -->
+<div class="slide active s1-bg">
+  <div class="s1-inner">
+    <div class="s1-left">
+      <div class="s1-tag">Продукт KEVIN</div>
+      <div class="s1-title">Групи<br>в <span>Zoom</span></div>
+      <div class="s1-sub">Структурована підготовка до НМТ у форматі онлайн-занять. Прямий контакт з викладачем, запис кожного уроку, чіткий графік.</div>
+      <div class="s1-pills">
+        <div class="s1-pill">💻 Zoom</div>
+        <div class="s1-pill">📅 <span>8 уроків/міс</span></div>
+        <div class="s1-pill">👥 4–12 учнів</div>
+        <div class="s1-pill">📌 Фіксований графік</div>
+        <div class="s1-pill">🎯 <span>НМТ</span></div>
+      </div>
+    </div>
+    <div class="s1-right">
+      <div class="logo-wrap">
+        <svg width="248" height="155" viewBox="0 0 561 350" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M286.123 54.5387C281.131 50.4673 267.982 49.1438 259.781 54.5387L287.116 20.5001H296.798L286.066 54.5387H286.123Z" fill="#E4B472"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M287.168 20.5008L303.425 0L296.85 20.5008H287.168Z" fill="#453636"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M319.611 20.5008L303.354 0L309.914 20.5008H319.611Z" fill="#9B827C"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M309.915 20.5008L303.354 0L296.852 20.5008H309.915Z" fill="#5A4A4A"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M320.702 54.5819L309.913 20.5001H296.85L286.103 54.6682C297.54 48.3957 309.208 48.5683 320.702 54.6682V54.5819Z" fill="#F4D592"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M320.66 54.5387C326.544 49.6185 339.363 48.7841 346.887 54.5387L319.552 20.5001H309.856L320.603 54.5387H320.66Z" fill="#FDFAD7"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M286.134 191.748H259.519L259.778 54.5431C268.573 48.3185 277.349 48.3185 286.106 54.5431V191.748H286.134Z" fill="#DE8E2B"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M320.564 192.107L286.122 191.748V54.5431C297.574 48.3185 309.054 48.3185 320.564 54.5431V192.107Z" fill="#F0BD40"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M346.915 191.748H320.3L320.559 54.5431C329.354 48.3185 338.13 48.3185 346.886 54.5431V191.748H346.915Z" fill="#F2D065"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M259.543 180.021L238.467 203.24C235.906 203.298 234.741 201.859 234.971 198.924C234.971 160.685 231.935 147.406 259.788 116.202L259.543 180.064V180.021Z" fill="#5A4A4A"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M259.798 116.159L253.094 124.071L252.849 187.401L259.553 179.762L259.798 116.159Z" fill="#453636"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M303.008 82.5349C305.529 82.5349 307.993 83.2824 310.089 84.683C312.186 86.0836 313.819 88.0744 314.784 90.4035C315.749 92.7326 316.001 95.2955 315.509 97.7681C315.018 100.241 313.804 102.512 312.021 104.294C310.238 106.077 307.967 107.291 305.495 107.783C303.022 108.275 300.459 108.022 298.13 107.058C295.801 106.093 293.81 104.459 292.409 102.363C291.009 100.267 290.261 97.8024 290.261 95.2813C290.261 91.9008 291.604 88.6586 293.995 86.2682C296.385 83.8778 299.627 82.5349 303.008 82.5349V82.5349ZM303.008 70.1912C307.97 70.1912 312.821 71.6627 316.947 74.4196C321.073 77.1766 324.289 81.0951 326.188 85.6798C328.087 90.2644 328.584 95.3092 327.616 100.176C326.648 105.043 324.258 109.514 320.749 113.023C317.24 116.532 312.77 118.921 307.903 119.889C303.036 120.858 297.991 120.361 293.406 118.462C288.822 116.563 284.903 113.347 282.146 109.221C279.389 105.095 277.918 100.244 277.918 95.2813C277.916 91.9859 278.563 88.7225 279.824 85.6775C281.084 82.6326 282.932 79.8659 285.262 77.5357C287.592 75.2055 290.359 73.3574 293.404 72.0972C296.449 70.837 299.712 70.1893 303.008 70.1912V70.1912Z" fill="white"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M259.689 191.928H346.973V201.02C346.961 204.262 345.667 207.368 343.373 209.659C341.079 211.951 337.972 213.241 334.73 213.248H271.903C268.661 213.241 265.554 211.951 263.26 209.659C260.966 207.368 259.672 204.262 259.661 201.02V191.928H259.689Z" fill="#3DB4BF"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M303.008 83.5434C305.333 83.5434 307.606 84.2331 309.54 85.5253C311.473 86.8174 312.979 88.654 313.869 90.8025C314.758 92.9511 314.99 95.3152 314.535 97.5956C314.08 99.876 312.959 101.97 311.314 103.614C309.669 105.257 307.573 106.375 305.292 106.827C303.011 107.279 300.648 107.044 298.5 106.152C296.353 105.26 294.518 103.752 293.228 101.817C291.938 99.882 291.251 97.6081 291.254 95.2828C291.254 93.74 291.558 92.2123 292.149 90.787C292.74 89.3618 293.606 88.067 294.698 86.9767C295.789 85.8864 297.085 85.022 298.511 84.4329C299.937 83.8437 301.465 83.5415 303.008 83.5434V83.5434Z" fill="#76CFE5"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M301.131 88.6394C308.396 84.8557 315.747 95.286 308.511 101.415C309.691 95.238 307.231 90.9796 301.131 88.6394Z" fill="white"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M346.948 180.367L368.038 203.587C370.58 203.587 371.745 202.148 371.534 199.271C371.534 161.046 374.57 147.752 346.703 116.562L346.948 180.424V180.367Z" fill="#5A4A4A"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M346.789 116.82L353.493 124.733L353.738 188.063L347.034 180.423L346.789 116.82Z" fill="#453636"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M309.053 136.47L307.024 199.454C306.449 217.438 299.831 218.272 299.256 199.454L297.241 136.671C296.752 121.22 309.513 122.285 309.053 136.413V136.47Z" fill="#5A4A4A"/>
+          <path d="M0 237.708H30.7009V282.651L68.8397 237.708H105.238L63.3009 285.342L106.662 348.484H69.7892L41.9368 307.339L30.7009 319.841V348.484H0V237.708Z" fill="#5A4A4A"/>
+          <path d="M131.351 237.708H220.447V263.819H161.735V280.594H214.908V304.807H161.735V322.387H221.238V348.484H131.351V237.708Z" fill="#5A4A4A"/>
+          <path d="M243.869 237.708H278.21L303.372 307.828L328.534 237.708H362.242L317.298 349.275H288.813L243.869 237.708Z" fill="#5A4A4A"/>
+          <path d="M389.457 348.484H420.316V237.708H389.457V348.484Z" fill="#5A4A4A"/>
+          <path d="M456.395 237.708H485.039L530.616 296.261V237.708H561V348.484H534.097L486.78 287.715V348.484H456.395V237.708Z" fill="#5A4A4A"/>
+          <path d="M284.999 237.968L304.334 282.149L322.317 237.853L284.999 237.968Z" fill="#EFBC3F"/>
+          <path d="M295.771 237.91L304.533 257.922L312.676 237.853L295.771 237.91Z" fill="white"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M328.535 237.895L303.373 307.829L278.211 237.895" fill="#EB7C22"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M319.988 237.895L303.055 284.954L286.122 237.895" fill="#F0BD40"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M311.238 237.895L303.052 260.669L294.852 237.895" fill="white"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div id="progress" style="width:14.3%"></div>
+</div>
+
+<!-- ══ SLIDE 2 — ЩО ЦЕ? ══ -->
+<div class="slide s2-bg">
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">02 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Що таке Групи в Zoom?</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Онлайн-заняття з підготовки до НМТ у малих групах</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="s2-cards">
+      <div class="s2-card">
+        <div class="s2-icon">🎯</div>
+        <div class="s2-card-title">Для кого</div>
+        <div class="s2-items">
+          <div class="s2-item">Учні будь-якого рівня підготовки</div>
+          <div class="s2-item">Ті, хто хоче готуватися в команді</div>
+          <div class="s2-item">Учні, яким важливий фіксований регулярний графік</div>
+          <div class="s2-item">Ті, хто хоче прямий контакт з викладачем у форматі онлайн</div>
+        </div>
+      </div>
+      <div class="s2-card">
+        <div class="s2-icon">📦</div>
+        <div class="s2-card-title">Що включає</div>
+        <div class="s2-items">
+          <div class="s2-item">Груповий чат учні + викладач + адмін</div>
+          <div class="s2-item">Записи всіх уроків</div>
+          <div class="s2-item">Домашні завдання у чаті та на KWIGA</div>
+          <div class="s2-item">Фіксований розклад на місяць</div>
+          <div class="s2-item">Лекції з експертами 1 раз/міс</div>
+          <div class="s2-item">Звіт про успішність батькам 1 раз/міс</div>
+        </div>
+      </div>
+      <div class="s2-card">
+        <div class="s2-icon">⚡</div>
+        <div class="s2-card-title">Особливість формату</div>
+        <div class="s2-items">
+          <div class="s2-item">Камерна атмосфера — не вебінар, реальний контакт</div>
+          <div class="s2-item">Ефект команди: учні взаємодіють, обговорюють</div>
+          <div class="s2-item">Структуровані заняття з чітким темпом</div>
+          <div class="s2-item">8 уроків на місяць — ритмічна підготовка</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 3 — ФОРМАТИ ══ -->
+<div class="slide s3-bg">
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">03 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Два формати груп</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Обери розмір групи під потреби учня</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="switcher-tabs">
+      <div class="sw-tab active" onclick="switchTab(this,'tab-mini')">👥 Міні-групи (4–6 учнів)</div>
+      <div class="sw-tab" onclick="switchTab(this,'tab-big')">🏫 Групи (10–12 учнів)</div>
+    </div>
+    <div id="tab-mini" class="sw-panel active">
+      <div class="sw-row sw-hl">
+        <div class="sw-label">Склад</div>
+        <div class="sw-val">3–4 учні + викладач</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Персоналізація</div>
+        <div class="sw-val">Висока <small>— викладач може приділити увагу кожному</small></div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Динаміка</div>
+        <div class="sw-val">Командна робота + індивідуальний підхід</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Занять на місяць</div>
+        <div class="sw-val">8 уроків <small>— фіксований графік</small></div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Обговорення</div>
+        <div class="sw-val">Дискусії та взаємодія між учнями</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Платформа</div>
+        <div class="sw-val">Zoom</div>
+      </div>
+    </div>
+    <div id="tab-big" class="sw-panel">
+      <div class="sw-row sw-hl">
+        <div class="sw-label">Склад</div>
+        <div class="sw-val">10–12 учнів + викладач</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Персоналізація</div>
+        <div class="sw-val">Помірна <small>— акцент на структурі занять</small></div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Динаміка</div>
+        <div class="sw-val">Ефект команди та групова атмосфера</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Занять на місяць</div>
+        <div class="sw-val">8 уроків <small>— фіксований графік</small></div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Формат</div>
+        <div class="sw-val">Камерніше, ніж вебінар — є контакт з викладачем</div>
+      </div>
+      <div class="sw-row">
+        <div class="sw-label">Платформа</div>
+        <div class="sw-val">Zoom</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4 — HOTSPOT ZOOM ══ -->
+<div class="slide s4-bg">
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">04 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Анатомія заняття в Zoom</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Натисни на кожну точку на екрані, щоб дізнатись більше</div>
+    </div>
+  </div>
+  <div class="slide-body s4-body">
+
+    <!-- Zoom mock screen -->
+    <div class="zoom-wrapper">
+      <div class="zoom-screen">
+        <div class="zoom-topbar">
+          <div class="zoom-meeting-name">📚 НМТ Математика — Міні-група А</div>
+          <div class="zoom-badges">
+            <span class="zoom-rec">● REC</span>
+            <span class="zoom-timer">00:47:23</span>
+          </div>
+        </div>
+        <div class="zoom-grid">
+          <div class="zoom-tile main">
+            <div class="zoom-avatar teacher">К</div>
+            <div class="zoom-tile-name t">Викладач KEVIN</div>
+            <div class="zoom-mic">🎤</div>
+          </div>
+          <div class="zoom-tile">
+            <div class="zoom-avatar s1">О</div>
+            <div class="zoom-tile-name">Олена</div>
+            <div class="zoom-mic">🔇</div>
+          </div>
+          <div class="zoom-tile">
+            <div class="zoom-avatar s2">Д</div>
+            <div class="zoom-tile-name">Дмитро</div>
+            <div class="zoom-mic">🎤</div>
+          </div>
+          <div class="zoom-tile">
+            <div class="zoom-avatar s3">М</div>
+            <div class="zoom-tile-name">Марія</div>
+            <div class="zoom-mic">🔇</div>
+          </div>
+        </div>
+        <div class="zoom-toolbar">
+          <div class="zt-btn">🎤</div>
+          <div class="zt-btn">📷</div>
+          <div class="zt-btn">🖥️</div>
+          <div class="zt-btn">💬 Чат</div>
+          <div class="zt-btn">👥</div>
+          <div class="zt-btn end">Завершити</div>
+        </div>
+
+        <!-- 6 hotspots -->
+        <div class="hotspot" style="left:83%;top:83%;" onclick="selectHot(0)">
+          <div class="hp-ring" style="animation-delay:0s;"></div>
+          <div class="hp-dot">💬</div>
+        </div>
+        <div class="hotspot" style="left:74%;top:9%;" onclick="selectHot(1)">
+          <div class="hp-ring" style="animation-delay:.3s;"></div>
+          <div class="hp-dot">🔴</div>
+        </div>
+        <div class="hotspot" style="left:25%;top:60%;" onclick="selectHot(2)">
+          <div class="hp-ring" style="animation-delay:.6s;"></div>
+          <div class="hp-dot">📝</div>
+        </div>
+        <div class="hotspot" style="left:44%;top:9%;" onclick="selectHot(3)">
+          <div class="hp-ring" style="animation-delay:.9s;"></div>
+          <div class="hp-dot">📅</div>
+        </div>
+        <div class="hotspot" style="left:73%;top:60%;" onclick="selectHot(4)">
+          <div class="hp-ring" style="animation-delay:1.2s;"></div>
+          <div class="hp-dot">🎓</div>
+        </div>
+        <div class="hotspot" style="left:25%;top:83%;" onclick="selectHot(5)">
+          <div class="hp-ring" style="animation-delay:1.5s;"></div>
+          <div class="hp-dot">📊</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail panel -->
+    <div class="zoom-detail-panel" id="detail-panel">
+      <div id="detail-empty">
+        <div class="detail-empty-icon">👆</div>
+        <div class="detail-empty-text">Натисни на будь-яку<br>пульсуючу точку</div>
+        <div class="hot-counter" style="margin-top:24px;" id="counter-empty">0 / 6 відкрито</div>
+        <div class="hot-bar-wrap" style="margin-top:8px;width:180px;"><div class="hot-bar" id="bar-empty" style="width:0%"></div></div>
+      </div>
+      <div class="detail-content" id="detail-content">
+        <div class="det-icon" id="det-icon"></div>
+        <div class="det-title" id="det-title"></div>
+        <div class="det-text" id="det-text"></div>
+        <div class="hot-counter" style="margin-top:20px;" id="counter-full"></div>
+        <div class="hot-bar-wrap" style="width:180px;"><div class="hot-bar" id="bar-full" style="width:0%"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SLIDE 5 — РОЗКЛАД ══ -->
+<div class="slide s5-bg">
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">05 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Розклад занять</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Фіксований графік — 8 уроків щомісяця</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="calendar-wrap">
+      <div class="calendar">
+        <div class="cal-month">Травень 2026</div>
+        <div class="cal-grid">
+          <div class="cal-head">ПН</div><div class="cal-head">ВТ</div><div class="cal-head">СР</div><div class="cal-head">ЧТ</div><div class="cal-head">ПТ</div><div class="cal-head">СБ</div><div class="cal-head">НД</div>
+          <!-- week 1: May starts on Friday -->
+          <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+          <div class="cal-day lesson done" onclick="calClick(this,'1 травня')">1</div>
+          <div class="cal-day">2</div><div class="cal-day">3</div>
+          <!-- week 2 -->
+          <div class="cal-day">4</div>
+          <div class="cal-day lesson done" onclick="calClick(this,'5 травня')">5</div>
+          <div class="cal-day">6</div>
+          <div class="cal-day lesson done" onclick="calClick(this,'7 травня')">7</div>
+          <div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div>
+          <!-- week 3 -->
+          <div class="cal-day">11</div>
+          <div class="cal-day lesson done" onclick="calClick(this,'12 травня')">12</div>
+          <div class="cal-day">13</div>
+          <div class="cal-day lesson done" onclick="calClick(this,'14 травня')">14</div>
+          <div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div>
+          <!-- week 4 -->
+          <div class="cal-day">18</div>
+          <div class="cal-day lesson" onclick="calClick(this,'19 травня')">19</div>
+          <div class="cal-day">20</div>
+          <div class="cal-day lesson" onclick="calClick(this,'21 травня')">21</div>
+          <div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div>
+          <!-- week 5 -->
+          <div class="cal-day">25</div>
+          <div class="cal-day lesson" onclick="calClick(this,'26 травня')">26</div>
+          <div class="cal-day">27</div>
+          <div class="cal-day lesson" onclick="calClick(this,'28 травня')">28</div>
+          <div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day">31</div>
+        </div>
+        <div class="cal-legend">
+          <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(135deg,#FFD300,#EB7C22);"></div>Проведено</div>
+          <div class="cal-leg-item"><div class="cal-leg-dot" style="background:linear-gradient(135deg,#4A90D9,#7BC8FF);"></div>Заплановано</div>
+        </div>
+      </div>
+      <div class="cal-info">
+        <div class="cal-stat">
+          <div class="cal-stat-num">8</div>
+          <div>
+            <div class="cal-stat-label">уроків на місяць</div>
+            <div class="cal-stat-sub">Фіксований графік — 2 рази на тиждень</div>
+          </div>
+        </div>
+        <div class="cal-stat">
+          <div class="cal-stat-num" style="color:#FFD300;">4</div>
+          <div>
+            <div class="cal-stat-label">вже проведено</div>
+            <div class="cal-stat-sub">Натисни на день, щоб побачити тему уроку</div>
+          </div>
+        </div>
+        <div class="cal-stat">
+          <div class="cal-stat-num" style="color:#3DB4BF;">🎓</div>
+          <div>
+            <div class="cal-stat-label">Лекція з експертом</div>
+            <div class="cal-stat-sub">1 раз на місяць — додатково до основних уроків</div>
+          </div>
+        </div>
+        <div id="cal-tooltip" style="display:none;background:rgba(74,144,217,.15);border:1px solid rgba(74,144,217,.4);border-radius:12px;padding:14px 18px;font-size:13px;color:#7BC8FF;font-weight:600;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6 — ДОДАТКОВІ ОПЦІЇ ══ -->
+<div class="slide s6-bg">
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">06 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Додаткові опції</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Підключаються за потребою — оплачуються окремо</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="options-grid">
+      <div class="opt-card">
+        <div class="opt-icon">📋</div>
+        <div class="opt-title">Імітації НМТ</div>
+        <div class="opt-desc">Пробні тести у форматі НМТ в умовах, максимально наближених до реального іспиту. Знімає тривогу та готує до формату.</div>
+        <div class="opt-tag">Підготовка до іспиту</div>
+      </div>
+      <div class="opt-card">
+        <div class="opt-icon">📚</div>
+        <div class="opt-title">Базовий курс</div>
+        <div class="opt-desc">Для учнів, які починають з нуля або мають серйозні прогалини. Систематизована база перед переходом до основної програми.</div>
+        <div class="opt-tag">Для новачків</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7 — ЧЕКЛИСТ ══ -->
+<div class="slide s7-bg">
+  <div id="confetti-container"></div>
+  <div class="slide-header">
+    <div class="slide-header-text">
+      <div class="slide-num">07 / 07</div>
+      <div class="slide-title" style="color:#4A90D9;">Чек-лист менеджера</div>
+      <div class="slide-subtitle" style="color:rgba(255,255,255,.45);">Перевір своє розуміння продукту</div>
+    </div>
+  </div>
+  <div class="slide-body">
+    <div class="s7-inner">
+      <div class="checklist">
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я знаю, чим Міні-групи відрізняються від Груп</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я знаю, що входить у заняття (чат, записи, ДЗ, розклад, лекції, звіт)</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я розумію, що ДЗ є і в чаті, і на KWIGA</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я пам'ятаю: 8 уроків/міс із фіксованим графіком</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я знаю всі 3 додаткові опції</div>
+        </div>
+        <div class="check-item" onclick="toggleCheck(this)">
+          <div class="check-box"></div>
+          <div class="check-text">Я готовий відповісти на питання клієнта про Групи</div>
+        </div>
+      </div>
+      <div class="resources">
+        <div class="res-title">📖 Джерело правди</div>
+        <a href="https://docs.google.com/document/d/1_ieSEWDDnvks7lOgfVa7gB8CqSpW0Bmb9ovMwn--NIo/edit?tab=t.c3pqz6ji3zbm" target="_blank" class="res-link" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;background:#EBF5FB;border-radius:10px;padding:9px 12px;font-weight:700;font-size:12px;">
+          <span>📄</span> Книга відділу продукту →
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- #stage -->
+
+<div id="nav">
+  <button onclick="prevSlide()">← Назад</button>
+  <div id="dots"></div>
+  <button onclick="nextSlide()">Далі →</button>
+</div>
+
+<script>
+// ── slide navigation ──
+const slides = document.querySelectorAll('.slide');
+const dotsEl = document.getElementById('dots');
+let cur = 0;
+const N = slides.length;
+slides.forEach((_,i)=>{
+  const d = document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+});
+function goTo(n){
+  if(n<0||n>=N) return;
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('out');
+  setTimeout(()=>slides[cur].classList.remove('out'),500);
+  cur=n;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  document.querySelectorAll('#progress').forEach(p=>p.style.width=((cur+1)/N*100)+'%');
+  if(cur===N-1) setTimeout(launchConfetti,600);
+}
+function nextSlide(){goTo(cur+1);}
+function prevSlide(){goTo(cur-1);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') nextSlide();
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') prevSlide();
+});
+
+// ── tab switcher ──
+function switchTab(btn,id){
+  document.querySelectorAll('.sw-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.sw-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ── hotspot data ──
+const hotData = [
+  {icon:'💬', title:'Груповий чат',    text:'Окремий чат для всіх учасників: учні + викладач + адміністратор. Оголошення, матеріали та відповіді на питання — в одному місці.'},
+  {icon:'🎥', title:'Записи уроків',   text:'Кожне заняття записується автоматично. Учень може переглянути в будь-який зручний час і повторити матеріал.'},
+  {icon:'📝', title:'Домашні завдання',text:'ДЗ надаються після кожного уроку — як у груповому чаті, так і на платформі KWIGA. Виконання відстежується викладачем.'},
+  {icon:'📅', title:'Фіксований розклад', text:'Графік занять фіксується на місяць наперед. 8 уроків щомісяця — стабільна ритмічна підготовка без несподіваних змін.'},
+  {icon:'🎓', title:'Лекції з експертами', text:'1 раз на місяць — спеціальні лекції від запрошених експертів. Доступні всім учасникам групових занять.'},
+  {icon:'📊', title:'Звіт батькам',    text:'Щомісяця батьки отримують звіт про успішність учня.'},
+];
+const opened = new Set();
+function updateBar(){
+  const pct = (opened.size/6*100)+'%';
+  document.getElementById('bar-empty').style.width=pct;
+  document.getElementById('bar-full').style.width=pct;
+  const txt=opened.size+' / 6 відкрито';
+  document.getElementById('counter-empty').textContent=txt;
+  document.getElementById('counter-full').textContent=txt;
+}
+function selectHot(i){
+  document.querySelectorAll('.hotspot').forEach((h,j)=>h.classList.toggle('active',j===i));
+  opened.add(i);
+  updateBar();
+  const d=hotData[i];
+  document.getElementById('det-icon').textContent=d.icon;
+  document.getElementById('det-title').textContent=d.title;
+  document.getElementById('det-text').textContent=d.text;
+  document.getElementById('detail-empty').style.display='none';
+  document.getElementById('detail-content').style.display='flex';
+}
+
+// ── calendar ──
+const lessonTopics = {
+  '1 травня':  '📐 Тема: Квадратні рівняння',
+  '5 травня':  '📐 Тема: Тригонометрія — основи',
+  '7 травня':  '📐 Тема: Похідна функції',
+  '12 травня': '📐 Тема: Інтеграли — введення',
+  '14 травня': '📐 Тема: Геометрія — площі фігур',
+  '19 травня': '📐 Тема: Ймовірність і статистика',
+  '21 травня': '📐 Тема: Комбінаторика',
+  '26 травня': '📐 Тема: Підготовка до НМТ — розбір типових задач',
+  '28 травня': '📐 Тема: Фінальний зріз знань',
+};
+function calClick(el, date){
+  const tip = document.getElementById('cal-tooltip');
+  tip.style.display='block';
+  tip.textContent = date + ' — ' + (lessonTopics[date]||'Урок');
+}
+
+// ── checklist + confetti ──
+let confettiDone=false;
+function toggleCheck(item){
+  item.classList.toggle('checked');
+  item.querySelector('.check-box').textContent=item.classList.contains('checked')?'✓':'';
+  const all=document.querySelectorAll('.check-item');
+  const checked=document.querySelectorAll('.check-item.checked');
+  if(checked.length===all.length&&!confettiDone){confettiDone=true;launchConfetti();}
+}
+function launchConfetti(){
+  const colors=['#4A90D9','#7BC8FF','#FFD300','#EB7C22','#fff','#3DB4BF'];
+  const c=document.getElementById('confetti-container');
+  for(let i=0;i<90;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    p.style.cssText=`left:${Math.random()*100}%;background:${colors[i%colors.length]};width:${5+Math.random()*7}px;height:${5+Math.random()*7}px;animation-duration:${1.4+Math.random()*2}s;animation-delay:${Math.random()*.8}s;`;
+    c.appendChild(p);
+    setTimeout(()=>p.remove(),(3+Math.random()*2)*1000);
+  }
+}
+
+// ── responsive scale ──
+function scaleStage(){
+  const s=document.getElementById('stage');
+  const sc=Math.min(window.innerWidth/1280,window.innerHeight/760,.95);
+  s.style.transform=`scale(${sc})`;
+  s.style.transformOrigin='center center';
+}
+window.addEventListener('resize',scaleStage);
+scaleStage();
+</script>
+</body>
+</html>
