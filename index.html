@@ -7,20 +7,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:'Montserrat',sans-serif;overflow:hidden;}
+body{background:#111;display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Montserrat',sans-serif;overflow:hidden;}
 #stage{width:1280px;height:720px;position:relative;overflow:hidden;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6);}
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;transform:translateX(60px);}
 .slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
 .slide.out{opacity:0;transform:translateX(-60px);}
 
 /* nav */
-#nav{display:flex;align-items:center;gap:16px;margin-top:14px;}
-#nav button{background:rgba(255,255,255,.12);border:none;color:#fff;padding:8px 22px;border-radius:20px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}
-#nav button:hover{background:rgba(255,255,255,.22);}
-#dots{display:flex;gap:8px;}
+#btn-prev,#btn-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;font-weight:700;z-index:100;display:flex;align-items:center;justify-content:center;transition:background .2s,box-shadow .2s;}
+#btn-prev{left:10px;}#btn-next{right:28px;}
+#btn-prev:hover,#btn-next:hover{background:#4A90D9;box-shadow:0 0 14px rgba(74,144,217,.5);}
+#nav-dots{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100;}
 .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:background .2s,transform .2s;}
 .dot.active{background:#4A90D9;transform:scale(1.3);}
 #progress{position:absolute;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#4A90D9,#7BC8FF);transition:width .4s ease;border-radius:0 2px 2px 0;}
+#slide-counter{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,.3);font-weight:600;z-index:100;}
 
 /* slide headers */
 .slide-header{padding:32px 56px 0;display:flex;align-items:flex-start;gap:18px;}
@@ -147,8 +148,8 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;justi
 
 /* ── SLIDE 7 — CHECKLIST ── */
 .s7-bg{background:linear-gradient(160deg,#060e1a,#101828);}
-.s7-inner{display:grid;grid-template-columns:1fr 1fr;gap:28px;height:100%;}
-.checklist{display:flex;flex-direction:column;gap:11px;}
+.s7-inner{display:flex;flex-direction:column;gap:14px;height:100%;}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .check-item{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.04);border-radius:11px;padding:13px 15px;cursor:pointer;border:1.5px solid transparent;transition:border-color .2s,background .2s;}
 .check-item.checked{border-color:#4A90D9;background:rgba(74,144,217,.07);}
 .check-box{width:22px;height:22px;border:2px solid rgba(255,255,255,.25);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;margin-top:1px;}
@@ -165,6 +166,10 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;justi
 </head>
 <body>
 <div id="stage">
+<button id="btn-prev" onclick="prevSlide()">←</button>
+<button id="btn-next" onclick="nextSlide()">→</button>
+<div id="nav-dots"></div>
+<div id="slide-counter">1 / 7</div>
 
 <!-- ══ SLIDE 1 — COVER ══ -->
 <div class="slide active s1-bg">
@@ -180,8 +185,8 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;justi
         <div class="s1-pill">📌 Фіксований графік</div>
         <div class="s1-pill">🎯 <span>НМТ</span></div>
       </div>
-    </div>
-    <div class="s1-right">
+    </div><!-- s1-left -->
+    <div class="s1-right" style="width:250px;align-items:stretch;">
       <div class="logo-wrap">
         <svg width="248" height="155" viewBox="0 0 561 350" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path fill-rule="evenodd" clip-rule="evenodd" d="M286.123 54.5387C281.131 50.4673 267.982 49.1438 259.781 54.5387L287.116 20.5001H296.798L286.066 54.5387H286.123Z" fill="#E4B472"/>
@@ -213,6 +218,18 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;justi
           <path fill-rule="evenodd" clip-rule="evenodd" d="M319.988 237.895L303.055 284.954L286.122 237.895" fill="#F0BD40"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M311.238 237.895L303.052 260.669L294.852 237.895" fill="white"/>
         </svg>
+      </div>
+      <div style="background:rgba(74,144,217,.18);border:1px solid rgba(74,144,217,.35);border-radius:16px;padding:14px;text-align:center;">
+        <div style="font-size:38px;font-weight:900;color:#4A90D9;line-height:1;">8</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;">уроків на місяць</div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">👥</span>
+        <div><div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Група</div><div style="font-size:12px;font-weight:700;color:#fff;">4–12 учнів · Zoom</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:18px;">📊</span>
+        <div><div style="font-size:9px;color:rgba(255,255,255,.4);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Слайдів</div><div style="font-size:12px;font-weight:700;color:#fff;">7 · ~20 хв</div></div>
       </div>
     </div>
   </div>
@@ -570,35 +587,26 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;justi
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box"></div>
-          <div class="check-text">Я знаю всі 3 додаткові опції</div>
+          <div class="check-text">Я знаю всі додаткові опції</div>
         </div>
         <div class="check-item" onclick="toggleCheck(this)">
           <div class="check-box"></div>
           <div class="check-text">Я готовий відповісти на питання клієнта про Групи</div>
         </div>
       </div>
-      <div class="resources">
-        <div class="res-title">📖 Джерело правди</div>
-        <a href="https://docs.google.com/document/d/1_ieSEWDDnvks7lOgfVa7gB8CqSpW0Bmb9ovMwn--NIo/edit?tab=t.c3pqz6ji3zbm" target="_blank" class="res-link" style="text-decoration:none;color:inherit;display:flex;align-items:center;gap:8px;background:#EBF5FB;border-radius:10px;padding:9px 12px;font-weight:700;font-size:12px;">
-          <span>📄</span> Книга відділу продукту →
-        </a>
-      </div>
+      <a href="https://docs.google.com/document/d/1_ieSEWDDnvks7lOgfVa7gB8CqSpW0Bmb9ovMwn--NIo/edit?tab=t.c3pqz6ji3zbm" target="_blank" style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 18px;text-decoration:none;color:rgba(255,255,255,.75);font-size:13px;font-weight:700;transition:background .2s;margin-top:auto;">
+        <span style="font-size:18px;">📖</span> Книга відділу продукту <span style="margin-left:auto;font-size:12px;color:#4A90D9;">Відкрити →</span>
+      </a>
     </div>
   </div>
 </div>
 
 </div><!-- #stage -->
 
-<div id="nav">
-  <button onclick="prevSlide()">← Назад</button>
-  <div id="dots"></div>
-  <button onclick="nextSlide()">Далі →</button>
-</div>
-
 <script>
 // ── slide navigation ──
 const slides = document.querySelectorAll('.slide');
-const dotsEl = document.getElementById('dots');
+const dotsEl = document.getElementById('nav-dots');
 let cur = 0;
 const N = slides.length;
 slides.forEach((_,i)=>{
@@ -616,6 +624,7 @@ function goTo(n){
   slides[cur].classList.add('active');
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
   document.querySelectorAll('#progress').forEach(p=>p.style.width=((cur+1)/N*100)+'%');
+  const sc=document.getElementById('slide-counter');if(sc)sc.textContent=(cur+1)+' / '+N;
   if(cur===N-1) setTimeout(launchConfetti,600);
 }
 function nextSlide(){goTo(cur+1);}
@@ -705,7 +714,7 @@ function launchConfetti(){
 // ── responsive scale ──
 function scaleStage(){
   const s=document.getElementById('stage');
-  const sc=Math.min(window.innerWidth/1280,window.innerHeight/760,.95);
+  const sc=Math.min(window.innerWidth/1280,window.innerHeight/720);
   s.style.transform=`scale(${sc})`;
   s.style.transformOrigin='center center';
 }
